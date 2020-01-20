@@ -1,19 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Waterskibaan
+﻿namespace Waterskibaan
 {
     public class Lijn
     {
         public int PositieOpDeKabel { get; set; }
         public Sporter Sporter { get; set; }
 
-        public Lijn()
+        public int ID { get; set; }
+        public Lijn(int ID)
         {
-            PositieOpDeKabel = 0;
+            this.ID = ID;
         }
     }
 }

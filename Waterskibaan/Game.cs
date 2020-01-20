@@ -1,17 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Windows.Threading;
 
 namespace Waterskibaan
 {
     public class Game
     {
-        private Waterskibaan waterskibaan = new Waterskibaan();
-        private WachtrijInstructie wachtrijInstrucie = new WachtrijInstructie();
-        private InstructieGroep instructieGroep = new InstructieGroep();
-        private WachtrijStarten wachtrijStarten = new WachtrijStarten();
-        private static DispatcherTimer tijd;
+        public Waterskibaan waterskibaan;
+        private Random random = new Random();
+        public WachtrijInstructie wachtrijInstructie;
+        public InstructieGroep instructieGroep;
+        public WachtrijStarten wachtrijStarten;
+        private DispatcherTimer tijd;
+        public int tickCount = 0;
+        public Logger logger;
 
         public delegate void NieuweBezoekerHandler(NieuweBezoekersArgs args);
         public event NieuweBezoekerHandler NieuweBezoeker;
@@ -19,84 +20,82 @@ namespace Waterskibaan
         public delegate void InstrutieAfgelopenHandler(InstructieAfgelopenArgs args);
         public event InstrutieAfgelopenHandler InstructieAfgelopen;
 
-        public delegate void VerplaatsLijnenHandler();
-        public event VerplaatsLijnenHandler verplaatsLijnen;
-        public int seconden;
 
-        public void Initialize(DispatcherTimer timer)
+
+        public void Initialize(DispatcherTimer tijd)
         {
-            tijd = timer;
-            NieuweBezoeker += wachtrijInstrucie.BijNieuweBezoeker;
-            InstructieAfgelopen += instructieGroep.InstructieIsAfgelopen;
+            wachtrijInstructie = new WachtrijInstructie();
+            instructieGroep = new InstructieGroep();
+            wachtrijStarten = new WachtrijStarten();
+            Kabel kabel = new Kabel();
+
+            NieuweBezoeker += wachtrijInstructie.BijNieuweBezoeker;
             InstructieAfgelopen += wachtrijStarten.InstructieIsAfgelopen;
-            SetTimer();
+            InstructieAfgelopen += instructieGroep.InstructieIsAfgelopen;
 
-            NieuweBezoeker += BijNieuweBezoeker;
-            InstructieAfgelopen += InstructieIsAfgelopen;
-            verplaatsLijnen += VerplaatsLijnen;
+            waterskibaan = new Waterskibaan(kabel);
+            logger = new Logger(waterskibaan.kabel);
 
-        }
-        private void SetTimer()
-        {
+            this.tijd = tijd;
+            tijd.Interval = TimeSpan.FromMilliseconds(100);
+            tijd.Tick += OnInstructieIsAfgelopen;
+            tijd.Tick += BijNieuweBezoeker;
+            tijd.Tick += VerplaatsLijnen;
+            tijd.Tick += VerhoogTijd;
 
-            tijd.Interval = TimeSpan.FromSeconds(1);
-            tijd.Tick += OnTimer;
-            tijd.IsEnabled = true;
             tijd.Start();
         }
 
-        private void OnTimer(object source, EventArgs e)
+        private void VerhoogTijd(object source, EventArgs e)
         {
-            seconden++;
-
-            Console.WriteLine(waterskibaan);
-            Console.WriteLine(wachtrijInstrucie);
-            Console.WriteLine(instructieGroep);
-            Console.WriteLine(wachtrijStarten);
+            tickCount++;
         }
-        private void BijNieuweBezoeker(EventArgs e)
+        private void BijNieuweBezoeker(object source, EventArgs e)
         {
-            if (seconden % 3 != 0) return;
-
-            Sporter sporter = new Sporter(MoveCollection.GetWillekeurigeMoves());
-
-
-            NieuweBezoeker?.Invoke(new NieuweBezoekersArgs { Sporter = sporter });
-        }
-
-        private void InstructieIsAfgelopen(EventArgs e)
-        {
-            if (seconden % 2 != 0)
+            if (tickCount % 3 == 0)
             {
-                return;
+                Sporter sporternu = new Sporter();
+                logger.sporters.Add(sporternu);
+                NieuweBezoeker?.Invoke(new NieuweBezoekersArgs { Sporter = sporternu });
             }
-            InstructieAfgelopen?.Invoke(new InstructieAfgelopenArgs
-            {
-                SportersKlaar = instructieGroep.SportersVerlatenRij(5),
-                NieuweSporters = wachtrijInstrucie.SportersVerlatenRij(5)
-            });
-
-
         }
-        private void VerplaatsLijnen()
+
+        private void OnInstructieIsAfgelopen(object source, EventArgs e)
         {
-            if (seconden % 4 != 0) return;
-            waterskibaan.VerplaatsKabel();
-            if (waterskibaan.kabel.IsStartPositieLeeg())
+            if (tickCount % 20 == 0)
             {
-                var sporter = wachtrijStarten.SportersVerlatenRij(1)[0];
-                sporter.Skies = new Skies();
-                sporter.Zwemvest = new Zwemvest();
-
-                waterskibaan.SporterStart(sporter);
-
-
-
+                InstructieAfgelopenArgs afgelopenArgs = new InstructieAfgelopenArgs()
+                {
+                    SportersKlaar = instructieGroep.SportersVerlatenRij(5),
+                    NieuweSporters = wachtrijInstructie.SportersVerlatenRij(5)
+                };
+                InstructieAfgelopen?.Invoke(afgelopenArgs);
             }
+        }
+        private void VerplaatsLijnen(object source, EventArgs e)
+        {
+            Sporter sporterStart = null;
 
-
-
+            if (tickCount % 4 == 0)
+            {
+                waterskibaan.VerplaatsKabel();
+                if (waterskibaan.kabel.IsStartPositieLeeg() && wachtrijStarten.GetAlleSporters().Count != 0 && waterskibaan.voorraad.GetAantalLijnen() != 0)
+                {
+                    sporterStart = wachtrijStarten.SportersVerlatenRij(1)[0];
+                    sporterStart.Skies = new Skies();
+                    sporterStart.Zwemvest = new Zwemvest();
+                    waterskibaan.SporterStart(sporterStart);
+                }
+                foreach (Lijn lijn in waterskibaan.kabel._lijnen)
+                {
+                    lijn.Sporter.move = null;
+                    int r = random.Next(100);
+                    if (r >= 70)
+                    {
+                        lijn.Sporter.DoeMove();
+                    }
+                }
+            }
         }
     }
 }
-

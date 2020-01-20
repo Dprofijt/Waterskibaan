@@ -1,21 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Waterskibaan
 {
     public class Waterskibaan
     {
         public Kabel kabel { get; set; } = new Kabel();
-        private LijnenVoorraad voorraad { get; set; } = new LijnenVoorraad();
+        public LijnenVoorraad voorraad = new LijnenVoorraad();
 
-        public Waterskibaan()
+        public Waterskibaan(Kabel kabel)
         {
             for (int i = 0; i < 15; i++)
             {
-                voorraad.LijnToevoegenAanRij(new Lijn());
+                voorraad.LijnToevoegenAanRij(new Lijn(i));
 
             }
         }
@@ -38,20 +34,18 @@ namespace Waterskibaan
 
         public void SporterStart(Sporter sporter)
         {
-            if (!kabel.IsStartPositieLeeg())
+            if (kabel.IsStartPositieLeeg() && voorraad.GetAantalLijnen() != 0)
             {
-                return;
+                Lijn lijn1 = voorraad.VerwijderEersteLijn();
+                lijn1.Sporter = sporter;
+                kabel.NeemLijnInGebruik(lijn1);
+                Random rnd = new Random();
+                sporter.AantalRondenNogTeGaan = rnd.Next(1, 3);
             }
-            if( sporter.Skies == null || sporter.Zwemvest == null)
+            if (sporter.Skies == null || sporter.Zwemvest == null)
             {
                 throw new Exception("de Sporter heeft geen zwemvest of skie!");
             }
-
-            Lijn lijn = voorraad.VerwijderEersteLijn();
-            lijn.Sporter = sporter;
-            sporter.AantalRondenNogTeGaan = new Random().Next(1, 3);
-            kabel.NeemLijnInGebruik(lijn);
-
         }
 
 

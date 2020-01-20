@@ -1,27 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Waterskibaan
+﻿namespace Waterskibaan
 {
     public class WachtrijInstructie : Wachtrij
     {
-        public int MAX_LENGTE_RIJ = 100;
-        
-        public override bool Aantal(int aantal)
-        {
-            return aantal <= MAX_LENGTE_RIJ;
-        }
+        public override int MAX_LENGTE_RIJ { get; } = 96;
+
         public void BijNieuweBezoeker(NieuweBezoekersArgs args)
         {
             SporterNeemPlaatsInRij(args.Sporter);
         }
 
-        public override string ToString()
-        {
-            return $"Wachtrij instructie: {GetAlleSporters().Count} wachtenden";
-        }
     }
 }

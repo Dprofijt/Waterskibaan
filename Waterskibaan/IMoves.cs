@@ -1,45 +1,46 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Waterskibaan
 {
     public interface IMoves
     {
+        string naam { get; }
         int Move();
-        
+
     }
+
+
     class Jump : IMoves
     {
-        Random rnd = new Random();
-        
-        int kans = 70;
-        int punten;
+        public string naam { get => "jump"; }
+        private int punten = 12;
         public int Move()
         {
-            int kansgetal = rnd.Next(100);
-            if(kansgetal <= kans)
+            Random random = new Random();
+            if (random.Next(100) > 70)
             {
-                punten = punten + 2;
+                return 0;
+            }
+            else
+            {
                 return punten;
             }
-            return 0;
         }
     }
+
+
     class Omdraaien : IMoves
     {
+        public string naam { get => "Omdraaien"; }
         Random rnd = new Random();
-
         int kans = 60;
-        int punten;
+        int punten = 5;
         public int Move()
         {
             int kansgetal = rnd.Next(100);
             if (kansgetal <= kans)
             {
-                punten = punten + 3;
                 return punten;
             }
             return 0;
@@ -47,16 +48,16 @@ namespace Waterskibaan
     }
     class Eenbeen : IMoves
     {
+        public string naam { get => "Eenbeen"; }
         Random rnd = new Random();
 
         int kans = 40;
-        int punten;
+        int punten = 12;
         public int Move()
         {
             int kansgetal = rnd.Next(100);
             if (kansgetal <= kans)
             {
-                punten = punten + 4;
                 return punten;
             }
             return 0;
@@ -64,16 +65,16 @@ namespace Waterskibaan
     }
     class Eenhand : IMoves
     {
+        public string naam { get => "Eenhand"; }
         Random rnd = new Random();
 
         int kans = 45;
-        int punten;
+        int punten = 9;
         public int Move()
         {
             int kansgetal = rnd.Next(100);
             if (kansgetal <= kans)
             {
-                punten = punten + 6;
                 return punten;
             }
             return 0;
@@ -82,13 +83,13 @@ namespace Waterskibaan
 
     public static class MoveCollection
     {
-        private static List<IMoves> _possibleMoves = new List<IMoves> { new Jump(), new Omdraaien(), new Eenbeen(), new Eenhand()};
         public static List<IMoves> GetWillekeurigeMoves()
         {
             List<IMoves> moves = new List<IMoves>();
             Random rnd = new Random();
+            IMoves[] _possibleMoves = new IMoves[] { new Jump(), new Omdraaien(), new Eenbeen(), new Eenhand() };
 
-            int max = rnd.Next(1, _possibleMoves.Count + 1);
+            int max = rnd.Next(1, _possibleMoves.Length + 1);
 
             for (int i = 0; i < max; i++)
             {
@@ -97,8 +98,5 @@ namespace Waterskibaan
 
             return moves;
         }
-
     }
-
-
 }

@@ -1,30 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Waterskibaan
 {
     public class LijnenVoorraad
     {
-        private Queue<Lijn> _lijnen { get; set; }
+        private Queue<Lijn> _lijnen = new Queue<Lijn>();
 
         public void LijnToevoegenAanRij(Lijn lijn)
         {
             _lijnen.Enqueue(lijn);
         }
-        
+
 
         public Lijn VerwijderEersteLijn()
         {
-            Lijn lijn = null;
+
 
             if (_lijnen.Count > 0)
-                lijn = _lijnen.Dequeue();
-
-            return lijn;
-
+            {
+                Lijn lijn = _lijnen.Dequeue();
+                return lijn;
+            }
+            else
+            {
+                return null;
+            }
 
         }
 
